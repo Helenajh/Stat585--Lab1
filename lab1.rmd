@@ -19,14 +19,32 @@ We seem to not receive an index file to run the code.  How should we go about ob
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Weather Stations
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This a function to input a station, and return the plot your expect.
+```{r}
+library(tidyverse)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+tmax <- function(stationid){
+  if (nchar(stationid) != 6) {leadzero <- paste(c(rep(0,each=6-nchar(stationid))),collapse='')} else {leadzero <- ""}
+  name <- paste("USH0",leadzero,stationid,".raw.tmax",sep="")
+temps <- read_fwf(name,
+                  col_positions = fwf_positions(
+                    start=c( 1,13, rep(16+9*0:11, each=4) + c(1,7,8,9)), 
+                    end  =c(11,16, rep(16+9*0:11, each=4) + c(6,7,8,9))))
+names(temps) <- c("Station", "Year", 
+                  paste0(rep(c("Value","DMflag", "QCflag", "DSflag"), 12), 
+                         rep(1:12, each=4)))
 
-```{r cars}
-summary(cars)
+stationid <- temps %>% 
+  gather(key="Month", value="Temp_Max", starts_with("Value"))
+stationid$Month <- as.numeric(gsub("Value", "", stationid$Month))
+stationid$Temp_Max <- replace(stationid$Temp_Max, 
+                              stationid$Temp_Max == -9999, NA)
+
+return(stationid %>% ggplot(aes(x = Year, Temp_Max/100)) + 
+  geom_point() + facet_wrap(~Month, nrow=2))
+}
 ```
 
 ## Including Plots
