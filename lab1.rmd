@@ -15,9 +15,6 @@ Warning message:
 running command 'makeindex advanced-r' had status 1 
 
 We seem to not receive an index file to run the code.  How should we go about obtaining this index file?
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## Weather Stations
 
