@@ -1,5 +1,5 @@
 ---
-title: "Lab1"
+title: "Lab 1"
 author: "He Jiang; Matt Stuart"
 date: "January 19, 2017"
 output: html_document
@@ -9,32 +9,47 @@ output: html_document
 
 We had code running to create a pdf from XeLaTex, but get stuck using this code: 
 system("makeindex advanced-r")
+
 Couldn't find input index file advanced-r nor advanced-r.idx.
+
 Usage: makeindex [-ilqrcgLT] [-s sty] [-o ind] [-t log] [-p num] [idx0 idx1 ...]
+
 Warning message:
 running command 'makeindex advanced-r' had status 1 
 
 We seem to not receive an index file to run the code.  How should we go about obtaining this index file?
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+## Weather Stations
+
+This a function to input a station, and return the plot your expect.  (Make sure you have tidyverse, dplyr and ggplot2 installed before running.)
+```{r tidy=TRUE,warning=FALSE,message=FALSE}
+tmax <- function(stationid){
+  library(tidyverse)
+  library(dplyr)
+  library(ggplot2)
+  if (nchar(stationid) != 6) {leadzero <- paste(c(rep(0,each=6-nchar(stationid))),collapse='')} else {leadzero <- ""}
+  name <- paste("ushcn.v2.5.5.20170119/USH00",leadzero,stationid,".raw.tmax",sep="")
+temps <- readr::read_fwf(name,
+                  col_positions = readr::fwf_positions(
+                    start=c( 1,13, rep(16+9*0:11, each=4) + c(1,7,8,9)), 
+                    end  =c(11,16, rep(16+9*0:11, each=4) + c(6,7,8,9))))
+names(temps) <- c("Station", "Year", 
+                  paste0(rep(c("Value","DMflag", "QCflag", "DSflag"), 12), 
+                         rep(1:12, each=4)))
+Ttl <- paste("Max Temperatures for Station ",leadzero,stationid," by Month",sep="")
+
+stationid <- temps %>% 
+  gather(key="Month", value="Temp_Max", starts_with("Value"))
+stationid$Month <- as.numeric(gsub("Value", "", stationid$Month))
+stationid$Temp_Max <- replace(stationid$Temp_Max, 
+                              stationid$Temp_Max == -9999, NA)
+
+return(stationid %>% ggplot(aes(x = Year, y = Temp_Max/100)) + 
+  geom_point() + facet_wrap(~Month, nrow=2) + labs(y="Max Temperature (Celsius)",title=Ttl))
+  
+}
+
+tmax(011084)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+As expected, max temperatures in Brewton, AL are higher in the summer and lower in the winter months.  What is a little surprising is the variability in the winter months, especially January, is much larger than in the summer months.
