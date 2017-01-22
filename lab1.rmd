@@ -21,20 +21,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Weather Stations
 
-This a function to input a station, and return the plot your expect.
+This a function to input a station, and return the plot your expect.  (Make sure you have tidyverse, dplyr and ggplot2 installed before running.)
 ```{r}
-library(tidyverse)
-
 tmax <- function(stationid){
+  library(tidyverse)
+  library(dplyr)
+  library(ggplot2)
   if (nchar(stationid) != 6) {leadzero <- paste(c(rep(0,each=6-nchar(stationid))),collapse='')} else {leadzero <- ""}
-  name <- paste("USH00",leadzero,stationid,".raw.tmax",sep="")
-temps <- read_fwf(name,
-                  col_positions = fwf_positions(
+  name <- paste("ushcn.v2.5.5.20170119/USH00",leadzero,stationid,".raw.tmax",sep="")
+temps <- readr::read_fwf(name,
+                  col_positions = readr::fwf_positions(
                     start=c( 1,13, rep(16+9*0:11, each=4) + c(1,7,8,9)), 
                     end  =c(11,16, rep(16+9*0:11, each=4) + c(6,7,8,9))))
 names(temps) <- c("Station", "Year", 
                   paste0(rep(c("Value","DMflag", "QCflag", "DSflag"), 12), 
                          rep(1:12, each=4)))
+Ttl <- paste("Max Temperatures for Station ",leadzero,stationid," by Month",sep="")
 
 stationid <- temps %>% 
   gather(key="Month", value="Temp_Max", starts_with("Value"))
@@ -42,8 +44,9 @@ stationid$Month <- as.numeric(gsub("Value", "", stationid$Month))
 stationid$Temp_Max <- replace(stationid$Temp_Max, 
                               stationid$Temp_Max == -9999, NA)
 
-return(stationid %>% ggplot(aes(x = Year, Temp_Max/100)) + 
-  geom_point() + facet_wrap(~Month, nrow=2))
+return(stationid %>% ggplot(aes(x = Year, y = Temp_Max/100)) + 
+  geom_point() + facet_wrap(~Month, nrow=2) + labs(y="Max Temperature (Celsius)",title=Ttl))
+  
 }
 
 tmax(011084)
