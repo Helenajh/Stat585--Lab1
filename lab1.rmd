@@ -27,7 +27,7 @@ library(tidyverse)
 
 tmax <- function(stationid){
   if (nchar(stationid) != 6) {leadzero <- paste(c(rep(0,each=6-nchar(stationid))),collapse='')} else {leadzero <- ""}
-  name <- paste("USH0",leadzero,stationid,".raw.tmax",sep="")
+  name <- paste("USH00",leadzero,stationid,".raw.tmax",sep="")
 temps <- read_fwf(name,
                   col_positions = fwf_positions(
                     start=c( 1,13, rep(16+9*0:11, each=4) + c(1,7,8,9)), 
@@ -45,14 +45,6 @@ stationid$Temp_Max <- replace(stationid$Temp_Max,
 return(stationid %>% ggplot(aes(x = Year, Temp_Max/100)) + 
   geom_point() + facet_wrap(~Month, nrow=2))
 }
+
+tmax(011084)
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
