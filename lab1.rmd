@@ -1,5 +1,5 @@
 ---
-title: "Lab1"
+title: "Lab 1"
 author: "He Jiang; Matt Stuart"
 date: "January 19, 2017"
 output: html_document
@@ -9,8 +9,11 @@ output: html_document
 
 We had code running to create a pdf from XeLaTex, but get stuck using this code: 
 system("makeindex advanced-r")
+
 Couldn't find input index file advanced-r nor advanced-r.idx.
+
 Usage: makeindex [-ilqrcgLT] [-s sty] [-o ind] [-t log] [-p num] [idx0 idx1 ...]
+
 Warning message:
 running command 'makeindex advanced-r' had status 1 
 
@@ -19,7 +22,7 @@ We seem to not receive an index file to run the code.  How should we go about ob
 ## Weather Stations
 
 This a function to input a station, and return the plot your expect.  (Make sure you have tidyverse, dplyr and ggplot2 installed before running.)
-```{r}
+```{r tidy=TRUE,warning=FALSE,message=FALSE}
 tmax <- function(stationid){
   library(tidyverse)
   library(dplyr)
@@ -48,3 +51,5 @@ return(stationid %>% ggplot(aes(x = Year, y = Temp_Max/100)) +
 
 tmax(011084)
 ```
+
+As expected, max temperatures in Brewton, AL are higher in the summer and lower in the winter months.  What is a little surprising is the variability in the winter months, especially January, is much larger than in the summer months.
